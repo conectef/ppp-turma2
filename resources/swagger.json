@@ -1,0 +1,128 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API de Pedidos de Restaurante",
+    "version": "1.0.0",
+    "description": "API para registro de pedidos, consulta de tempo de espera e autenticação de gerente/garçom."
+  },
+  "paths": {
+    "/api/register": {
+      "post": {
+        "summary": "Registrar usuário (gerente/garçom)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nome": { "type": "string" },
+                  "tipo": { "type": "string", "enum": ["gerente", "garcom"] },
+                  "senha": { "type": "string" },
+                  "mesa": { "type": "string" }
+                },
+                "required": ["nome", "tipo", "senha"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Usuário criado" },
+          "400": { "description": "Dados obrigatórios ausentes" },
+          "409": { "description": "Usuário já existe" }
+        }
+      }
+    },
+    "/api/login": {
+      "post": {
+        "summary": "Login de usuário",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nome": { "type": "string" },
+                  "senha": { "type": "string" }
+                },
+                "required": ["nome", "senha"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Token JWT gerado" },
+          "401": { "description": "Credenciais inválidas" }
+        }
+      }
+    },
+    "/api/pedidos": {
+      "post": {
+        "summary": "Registrar pedido (gerente)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mesa": { "type": "string" },
+                  "itens": { "type": "array", "items": { "type": "string" } }
+                },
+                "required": ["mesa", "itens"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Pedido criado" },
+          "400": { "description": "Dados obrigatórios ausentes" },
+          "403": { "description": "Acesso negado" }
+        }
+      },
+      "get": {
+        "summary": "Consultar pedidos (gerente/garçom)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Lista de pedidos" },
+          "403": { "description": "Acesso negado" }
+        }
+      }
+    },
+    "/api/pedidos/{id}/tempo": {
+      "get": {
+        "summary": "Consultar tempo de espera do pedido",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": { "description": "Tempo de espera do pedido" },
+          "404": { "description": "Pedido não encontrado" }
+        }
+      }
+    },
+    "/api/pedidos/{id}/finalizar": {
+      "put": {
+        "summary": "Finalizar pedido (gerente)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": { "description": "Pedido finalizado" },
+          "403": { "description": "Acesso negado" },
+          "404": { "description": "Pedido não encontrado" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [{ "bearerAuth": [] }]
+}
